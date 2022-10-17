@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
 use eframe::egui;
+use egui::{Align, Layout};
 use egui_extras::{Size, TableBuilder};
 
 fn main() {
@@ -14,14 +15,12 @@ fn main() {
 
 struct MyApp {
     name: String,
-    age: u32,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            name: "Arthur".to_owned(),
-            age: 42,
+            name: "".to_owned(),
         }
     }
 }
@@ -29,17 +28,18 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Rustypass");
+            let main_dir = Layout::main_dir(&Layout::top_down(Align::Center));
+            let cross_align = Align::Min;
+            let layout = Layout::from_main_dir_and_cross_align(main_dir, cross_align)
+                .with_cross_justify(true);
             ui.horizontal(|ui| {
                 ui.label("Filter:");
                 ui.text_edit_singleline(&mut self.name);
             });
-            ui.add(egui::Slider::new(&mut self.age, 0..=120).text("age"));
-            if ui.button("Click each year").clicked() {
-                self.age += 1;
-            }
-            ui.label(format!("Hello '{}', age {}", self.name, self.age));
+            ui.separator();
             TableBuilder::new(ui)
+                .cell_layout(layout)
+                .striped(true)
                 .column(Size::remainder().at_least(100.0))
                 .header(20.0, |mut header| {
                     header.col(|ui| {
@@ -47,7 +47,7 @@ impl eframe::App for MyApp {
                     });
                 })
                 .body(|mut body| {
-                    body.row(30.0, |mut row| {
+                    body.row(20.0, |mut row| {
                         row.col(|ui| {
                             if ui.button("ansible/become").clicked() {
                                 println!("button clicked");
