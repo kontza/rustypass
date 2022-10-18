@@ -3,6 +3,9 @@
 use eframe::egui;
 use egui::{Align, Layout};
 use egui_extras::{Size, TableBuilder};
+use walkdir::{DirEntry, WalkDir};
+
+static ROOT_PATH: &str = "/Users/juharu/.local/share/gopass/stores/root";
 
 fn main() {
     let options = eframe::NativeOptions::default();
@@ -15,14 +18,40 @@ fn main() {
 
 struct MyApp {
     name: String,
+    entries: Vec<String>,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
+        find_entries();
         Self {
             name: "".to_owned(),
+            entries: find_entries(),
         }
     }
+}
+
+fn is_hidden(entry: &DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.starts_with("."))
+        .unwrap_or(false)
+}
+
+pub fn find_entries() -> Vec<String> {
+    let mut entries: Vec<String> = Vec::new();
+    let walker = WalkDir::new(ROOT_PATH).follow_links(true).into_iter();
+    for entry in walker.filter_entry(|e| !is_hidden(e)) {
+        let unwrapped = entry.unwrap();
+        if unwrapped.file_type().is_file() {
+            if let Ok(relative) = unwrapped.path().strip_prefix(ROOT_PATH) {
+                let as_string = relative.as_os_str().to_str().unwrap();
+                entries.push(as_string.to_string());
+            }
+        }
+    }
+    return entries;
 }
 
 impl eframe::App for MyApp {
@@ -47,13 +76,15 @@ impl eframe::App for MyApp {
                     });
                 })
                 .body(|mut body| {
-                    body.row(20.0, |mut row| {
-                        row.col(|ui| {
-                            if ui.button("ansible/become").clicked() {
-                                println!("button clicked");
-                            }
+                    for entry in &mut self.entries {
+                        body.row(20.0, |mut row| {
+                            row.col(|ui| {
+                                if ui.button(entry.to_string()).clicked() {
+                                    println!("button clicked");
+                                }
+                            });
                         });
-                    });
+                    }
                 })
         });
     }
