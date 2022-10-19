@@ -1,11 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
 
+use std::path::PathBuf;
+
+use dirs;
 use eframe::egui;
 use egui::{Align, Layout};
 use egui_extras::{Size, TableBuilder};
 use walkdir::{DirEntry, WalkDir};
 
-static ROOT_PATH: &str = "/Users/juharu/.local/share/gopass/stores/root";
+static GOPASS_ROOT_STORE: &str = ".local/share/gopass/stores/root";
 
 fn main() {
     let options = eframe::NativeOptions::default();
@@ -41,15 +44,26 @@ fn is_hidden(entry: &DirEntry) -> bool {
 
 pub fn find_entries() -> Vec<String> {
     let mut entries: Vec<String> = Vec::new();
-    let walker = WalkDir::new(ROOT_PATH).follow_links(true).into_iter();
-    for entry in walker.filter_entry(|e| !is_hidden(e)) {
-        let unwrapped = entry.unwrap();
-        if unwrapped.file_type().is_file() {
-            if let Ok(relative) = unwrapped.path().strip_prefix(ROOT_PATH) {
-                let as_string = relative.as_os_str().to_str().unwrap();
-                entries.push(as_string.to_string());
+    let home_opt = dirs::home_dir();
+    let mut home = match home_opt {
+        Some(h) => h,
+        None => PathBuf::new(),
+    };
+    home.push(GOPASS_ROOT_STORE);
+    let walker = WalkDir::new(home).follow_links(true).into_iter();
+    for entry_result in walker.filter_entry(|e| !is_hidden(e)) {
+        if let Ok(entry) = entry_result {
+            if entry.file_type().is_file() {
+                println!("entry path = {:?}", entry.path());
             }
         }
+        // let unwrapped = entry.unwrap();
+        // if unwrapped.file_type().is_file() {
+        // if let Ok(relative) = unwrapped.path().strip_prefix(GOPASS_ROOT_STORE) {
+        //     let as_string = relative.as_os_str().to_str().unwrap();
+        //     entries.push(as_string.to_string());
+        // }
+        // }
     }
     return entries;
 }
@@ -77,6 +91,7 @@ impl eframe::App for MyApp {
                 })
                 .body(|mut body| {
                     for entry in &mut self.entries {
+                        println!("entry = {:?}", entry);
                         body.row(20.0, |mut row| {
                             row.col(|ui| {
                                 if ui.button(entry.to_string()).clicked() {
