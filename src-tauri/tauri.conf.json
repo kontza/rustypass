@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "tauripass",
+    "productName": "rustypass",
     "version": "0.1.0"
   },
   "tauri": {

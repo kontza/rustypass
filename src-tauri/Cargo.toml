@@ -1,13 +1,13 @@
 [package]
-name = "app"
+name = "rustypass"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
-default-run = "app"
+description = "A simple app to copy _gopass_ passwords to clipboard."
+authors = ["Juha Ruotsalainen <juha.ruotsalainen@iki.fi>"]
+license = "MIT"
+repository = "https://github.com/konta/rustypass"
+default-run = "rustypass"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.64"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
