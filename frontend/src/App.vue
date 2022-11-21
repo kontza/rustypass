@@ -5,8 +5,24 @@ import TheWelcome from './components/TheWelcome.vue'
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    <img
+      alt="Vue logo"
+      class="logo"
+      src="./assets/logo.svg"
+      width="125"
+      height="125"
+    />
 
+    <button
+      class="btn btn-primary"
+      data-bs-target="#collapseTarget"
+      data-bs-toggle="collapse"
+    >
+      Bootstrap collapse
+    </button>
+    <div class="collapse py-2" id="collapseTarget">
+      This is the toggle-able content!
+    </div>
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
     </div>
