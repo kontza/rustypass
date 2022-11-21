@@ -1,38 +1,43 @@
 //! Here be config file operations
-use std::io::Error;
+use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
+
+use self::config_dir::ConfigDirInterface;
 mod config_dir;
 
 const APP_NAME: &str = "rustypass";
 const CONFIG_NAME: &str = "config.toml";
 pub const SCAN_DIRECTORY_VALUE: &str = "scan-directory";
 
-// trait BaseDirInterface {
-//     fn get_config(&mut self, value: &str) -> Result<PathBuf, Error>;
-// }
-//
-// struct BaseDir {
-//     base_dir: PathBuf,
-// }
-//
-// impl BaseDirInterface for BaseDir {
-//     fn get_config(&mut self, value: &str) -> Result<PathBuf, Error> {
-//         let mut dir = self.base_dir;
-//         dir.push(APP_NAME);
-//         dir.push(CONFIG_NAME);
-//         Ok(dir)
-//     }
-// }
+trait ConfigStoreInterface {
+    fn get_config(&mut self, value: &str) -> Result<PathBuf, Error>;
+}
+
+#[derive(Debug)]
+struct ConfigStore {
+    config_dir: Box<dyn ConfigDirInterface>,
+}
+impl ConfigStoreInterface for ConfigStore {
+    fn get_config(&mut self, value: &str) -> Result<PathBuf, Error> {
+        Err(Error::new(ErrorKind::Other, "Not implemented!"))
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    // use crate::config::config_dir::TestConfigDir;
-    //
-    // use super::{config_dir::NoneConfigDir, *};
-    //
-    // #[test]
-    // fn it_gets_the_expected_value() {
-    //     let n = NoneConfigDir {};
-    //     n.get();
-    // }
+    use crate::config::{ConfigStoreInterface, SCAN_DIRECTORY_VALUE};
+
+    use super::config_dir::{self, ConfigDirInterface, TestConfigDir};
+    use super::ConfigStore;
+
+    #[test]
+    fn config_gets_the_expected_base_dir() {
+        let mut bd = ConfigStore {
+            config_dir: Box::new(TestConfigDir),
+        };
+        match bd.get_config(SCAN_DIRECTORY_VALUE) {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false),
+        }
+    }
 }

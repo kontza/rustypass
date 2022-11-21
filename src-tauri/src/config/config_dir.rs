@@ -1,7 +1,21 @@
+use core::fmt::Debug;
 use std::{env, path::PathBuf};
 
+#[derive(Debug)]
+pub enum ConfigDirKind {
+    Real,
+    Test,
+    Nil,
+}
 pub trait ConfigDirInterface {
     fn get(&self) -> Option<PathBuf>;
+    fn get_kind(&self) -> ConfigDirKind;
+}
+
+impl Debug for dyn ConfigDirInterface {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "ConfigDirInterface {:?}", self.get_kind())
+    }
 }
 
 #[derive(Debug)]
@@ -9,6 +23,10 @@ pub struct ConfigDir;
 impl ConfigDirInterface for ConfigDir {
     fn get(&self) -> Option<PathBuf> {
         dirs::config_dir()
+    }
+
+    fn get_kind(&self) -> ConfigDirKind {
+        ConfigDirKind::Real
     }
 }
 
@@ -24,6 +42,10 @@ impl ConfigDirInterface for TestConfigDir {
             None
         }
     }
+
+    fn get_kind(&self) -> ConfigDirKind {
+        ConfigDirKind::Test
+    }
 }
 
 #[derive(Debug)]
@@ -31,6 +53,10 @@ pub struct NoneConfigDir;
 impl ConfigDirInterface for NoneConfigDir {
     fn get(&self) -> Option<PathBuf> {
         None
+    }
+
+    fn get_kind(&self) -> ConfigDirKind {
+        ConfigDirKind::Nil
     }
 }
 
