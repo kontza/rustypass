@@ -24,14 +24,10 @@ impl Debug for dyn ConfigDirInterface {
 pub struct ConfigDir;
 impl ConfigDirInterface for ConfigDir {
     fn get(&self) -> Option<PathBuf> {
-        match dirs::config_dir() {
-            None => None,
-            Some(mut b) => {
-                b.push(env::var("CARGO_PKG_NAME").unwrap());
-                b.push(CONFIG_NAME);
-                Some(b)
-            }
-        }
+        let mut b = dirs::config_dir()?;
+        b.push(env::var("CARGO_PKG_NAME").unwrap());
+        b.push(CONFIG_NAME);
+        Some(b)
     }
 
     fn get_kind(&self) -> ConfigDirKind {
@@ -43,15 +39,12 @@ impl ConfigDirInterface for ConfigDir {
 pub struct TestConfigDir;
 impl ConfigDirInterface for TestConfigDir {
     fn get(&self) -> Option<PathBuf> {
-        if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-            let mut b = PathBuf::from(manifest_dir);
-            b.push("resources");
-            b.push("test");
-            b.push(CONFIG_NAME);
-            Some(b)
-        } else {
-            None
-        }
+        let manifest_dir = env::var("CARGO_MANIFEST_DIR").ok()?;
+        let mut b = PathBuf::from(manifest_dir);
+        b.push("resources");
+        b.push("test");
+        b.push(CONFIG_NAME);
+        Some(b)
     }
 
     fn get_kind(&self) -> ConfigDirKind {
