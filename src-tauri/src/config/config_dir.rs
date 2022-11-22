@@ -1,6 +1,8 @@
 use core::fmt::Debug;
 use std::{env, path::PathBuf};
 
+const CONFIG_NAME: &str = "config.toml";
+
 #[derive(Debug)]
 pub enum ConfigDirKind {
     Real,
@@ -22,7 +24,14 @@ impl Debug for dyn ConfigDirInterface {
 pub struct ConfigDir;
 impl ConfigDirInterface for ConfigDir {
     fn get(&self) -> Option<PathBuf> {
-        dirs::config_dir()
+        match dirs::config_dir() {
+            None => None,
+            Some(mut b) => {
+                b.push(env::var("CARGO_PKG_NAME").unwrap());
+                b.push(CONFIG_NAME);
+                Some(b)
+            }
+        }
     }
 
     fn get_kind(&self) -> ConfigDirKind {
@@ -34,10 +43,12 @@ impl ConfigDirInterface for ConfigDir {
 pub struct TestConfigDir;
 impl ConfigDirInterface for TestConfigDir {
     fn get(&self) -> Option<PathBuf> {
-        let mut resource_dir = PathBuf::new();
         if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-            resource_dir.push(manifest_dir);
-            Some(resource_dir)
+            let mut b = PathBuf::from(manifest_dir);
+            b.push("resources");
+            b.push("test");
+            b.push(CONFIG_NAME);
+            Some(b)
         } else {
             None
         }
@@ -62,7 +73,9 @@ impl ConfigDirInterface for NoneConfigDir {
 
 #[cfg(test)]
 mod tests {
-    use super::{ConfigDir, ConfigDirInterface, NoneConfigDir, TestConfigDir};
+    use std::{env, path::PathBuf};
+
+    use super::{ConfigDir, ConfigDirInterface, NoneConfigDir, TestConfigDir, CONFIG_NAME};
 
     #[test]
     fn none_gets_none() {
@@ -76,7 +89,7 @@ mod tests {
         let p = t.get();
         assert_ne!(None, p);
         let u = p.unwrap();
-        assert_eq!(true, u.ends_with("src-tauri"));
+        assert_eq!(true, u.ends_with("src-tauri/resources/test/config.toml"));
     }
 
     #[test]
@@ -85,8 +98,13 @@ mod tests {
         let p = c.get();
         assert_ne!(None, p);
         let u = p.unwrap();
-        let found =
-            u.ends_with("Application Support") || u.ends_with(".config") || u.ends_with("Roaming");
+        let package_name = env::var("CARGO_PKG_NAME").unwrap();
+        let mac: PathBuf = ["Application Support", &package_name, CONFIG_NAME]
+            .iter()
+            .collect();
+        let linux: PathBuf = [".config", &package_name, CONFIG_NAME].iter().collect();
+        let windows: PathBuf = ["Roaming", &package_name, CONFIG_NAME].iter().collect();
+        let found = u.ends_with(mac) || u.ends_with(linux) || u.ends_with(windows);
         assert_eq!(true, found);
     }
 }
