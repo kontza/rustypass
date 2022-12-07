@@ -1,0 +1,33 @@
+{
+  "root": true,
+  "extends": [
+    "plugin:vue/vue3-essential",
+    "@vue/eslint-config-standard-with-typescript",
+    "prettier"
+  ],
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "plugins": ["@typescript-eslint"],
+  "parserOptions": {
+    "project": ["./tsconfig.json"],
+    "ecmaVersion": "latest",
+    "ecmaFeatures": {
+      "jsx": false
+    }
+  },
+  "globals": {
+    "onBeforeMount": "readonly",
+    "onMounted": "readonly",
+    "reactive": "readonly",
+    "ref": "readonly",
+    "useRoute": "readonly",
+    "useRouter": "readonly"
+  },
+  "rules": {
+    "comma-dangle": "off",
+    "@typescript-eslint/comma-dangle": "warn"
+  }
+}
