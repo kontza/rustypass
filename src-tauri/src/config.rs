@@ -2,7 +2,7 @@
 use config::{Config, File, FileFormat};
 
 use self::config_dir::ConfigDirInterface;
-mod config_dir;
+pub mod config_dir;
 
 pub const SCAN_DIRECTORY_VALUE: &str = "scan-directory";
 
