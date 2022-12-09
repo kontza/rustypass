@@ -1,5 +1,4 @@
 //! Do a recursive scan of a given directory looking for gpg files.
-use config::*;
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -7,6 +6,8 @@ use std::sync::mpsc::Receiver;
 use std::thread;
 use walkdir::WalkDir;
 
+#[allow(dead_code)]
+#[derive(Debug)]
 struct WalkResult {
     /// The path of the found file.
     pub path: String,
@@ -17,11 +18,13 @@ struct WalkResult {
 }
 
 /// Initiate scanning.
+#[allow(dead_code)]
 fn start_scanning() {}
 
 /// Start scanning through the given directory. Returns a channel of
 /// WalkResult structs.
-fn _start_scanning(first_step: &PathBuf) -> Receiver<WalkResult> {
+#[allow(dead_code)]
+fn do_start_scanning(first_step: &PathBuf) -> Receiver<WalkResult> {
     let (tx, rx) = mpsc::channel();
 
     let starter = first_step.clone();
@@ -68,24 +71,24 @@ mod tests {
         resource_dir.push("resources");
         resource_dir.push("test");
         let mut items: Vec<String> = vec![];
-        // let rx = start_scanning(&resource_dir);
+        let rx = do_start_scanning(&resource_dir);
         let mut invalid_count = 0;
-        // for received in rx {
-        //     match received.result {
-        //         Ok(result) => {
-        //             if result == true {
-        //                 items.push(received.path);
-        //             } else {
-        //                 println!("Unknown media type: {}", received.path);
-        //                 invalid_count += 1;
-        //             }
-        //         }
-        //         Err(err) => {
-        //             println!("{}: {:?}", received.path, err);
-        //         }
-        //     }
-        // }
+        for received in rx {
+            match received.result {
+                Ok(result) => {
+                    if result == true {
+                        items.push(received.path);
+                    } else {
+                        println!("Unknown media type: {}", received.path);
+                        invalid_count += 1;
+                    }
+                }
+                Err(err) => {
+                    println!("{}: {:?}", received.path, err);
+                }
+            }
+        }
         assert_eq!(items.len(), 3);
-        assert_eq!(invalid_count, 1);
+        assert_eq!(invalid_count, 2);
     }
 }
