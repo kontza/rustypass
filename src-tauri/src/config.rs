@@ -1,8 +1,7 @@
 //! Here be config file operations
-use config::{Config, File, FileFormat};
-
-use self::config_dir::ConfigDirInterface;
 pub mod config_dir;
+use crate::config::config_dir::ConfigDirInterface;
+use config::{Config, File, FileFormat};
 
 pub const SCAN_DIRECTORY_VALUE: &str = "scan-directory";
 

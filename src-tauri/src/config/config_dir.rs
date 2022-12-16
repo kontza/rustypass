@@ -1,7 +1,7 @@
 use core::fmt::Debug;
 use std::{env, path::PathBuf};
 
-const CONFIG_NAME: &str = "config.toml";
+pub const CONFIG_NAME: &str = "config.toml";
 
 #[derive(Debug)]
 pub enum ConfigDirKind {
