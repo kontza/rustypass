@@ -25,7 +25,8 @@ pub struct ConfigDir;
 impl ConfigDirInterface for ConfigDir {
     fn get(&self) -> Option<PathBuf> {
         let mut b = dirs::config_dir()?;
-        b.push(env::var("CARGO_PKG_NAME").unwrap());
+        let pkg_name = env!("CARGO_PKG_NAME");
+        b.push(pkg_name);
         b.push(CONFIG_NAME);
         Some(b)
     }

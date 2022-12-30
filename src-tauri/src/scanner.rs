@@ -1,5 +1,4 @@
 //! Do a recursive scan of a given directory looking for gpg files.
-use crate::config::config_dir::{ConfigDir, ConfigDirInterface};
 use std::io::{Error, ErrorKind};
 use std::path::PathBuf;
 use std::sync::mpsc;
@@ -9,7 +8,7 @@ use walkdir::WalkDir;
 
 #[allow(dead_code)]
 #[derive(Debug)]
-struct WalkResult {
+pub struct WalkResult {
     /// The path of the found file.
     pub path: String,
     /// - _bool_:
@@ -18,18 +17,10 @@ struct WalkResult {
     pub result: Result<bool, Error>,
 }
 
-/// Initiate scanning.
-#[allow(dead_code)]
-fn start_scanning() {
-    let c = ConfigDir;
-    let p = c.get();
-    println!(">>> config dir path = {:?}", p);
-}
-
 /// Start scanning through the given directory. Returns a channel of
 /// WalkResult structs.
 #[allow(dead_code)]
-fn do_start_scanning(first_step: &PathBuf) -> Receiver<WalkResult> {
+pub fn do_start_scanning(first_step: &PathBuf) -> Receiver<WalkResult> {
     let (tx, rx) = mpsc::channel();
 
     let starter = first_step.clone();
@@ -95,10 +86,5 @@ mod tests {
         }
         assert_eq!(items.len(), 3);
         assert_eq!(invalid_count, 2);
-    }
-
-    #[test]
-    fn real_config_dir_isfound() {
-        start_scanning();
     }
 }

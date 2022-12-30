@@ -5,13 +5,13 @@ use config::{Config, File, FileFormat};
 
 pub const SCAN_DIRECTORY_VALUE: &str = "scan-directory";
 
-trait ConfigStoreInterface {
+pub trait ConfigStoreInterface {
     fn get_config(&mut self, value: &str) -> Option<String>;
 }
 
 #[derive(Debug)]
-struct ConfigStore {
-    config_dir: Box<dyn ConfigDirInterface>,
+pub struct ConfigStore {
+    pub config_dir: Box<dyn ConfigDirInterface>,
 }
 impl ConfigStoreInterface for ConfigStore {
     fn get_config(&mut self, value: &str) -> Option<String> {

@@ -4,7 +4,9 @@
 
 <template>
   <main>
-    <TheWelcome />
+    <Suspense>
+      <TheWelcome />
+    </Suspense>
   </main>
 </template>
 

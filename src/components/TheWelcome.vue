@@ -5,9 +5,34 @@
   import EcosystemIcon from '@/components/icons/IconEcosystem.vue'
   import CommunityIcon from '@/components/icons/IconCommunity.vue'
   import SupportIcon from '@/components/icons/IconSupport.vue'
+  import { listen } from '@tauri-apps/api/event'
+  import { invoke } from '@tauri-apps/api'
+  import { useTracingStore } from '@/stores/trace'
+  import { ref, computed } from 'vue'
+
+  function startScanning() {
+    console.log('start_scanning')
+    invoke('start_scanning')
+  }
+  const tracingStore = useTracingStore()
+  const unlisten = await listen('TRACE', (evt: any) => {
+    const msg = JSON.parse(evt.payload.message)
+    tracingStore.appendTrace(msg.fields?.payload)
+  })
+  let traces = ref('Nothing to see here. Move along.')
+  tracingStore.$subscribe((mutation, state) => {
+    traces.value = state.traces.join('\n')
+  })
+  const allTraces = computed(() => traces.value)
 </script>
 
 <template>
+  <div class="card">
+    <button type="button" @click="startScanning">Start scanning</button><br />
+    <textarea id="traces" name="traces" rows="10" cols="80" readonly>{{
+      allTraces
+    }}</textarea>
+  </div>
   <WelcomeItem>
     <template #icon>
       <DocumentationIcon />
