@@ -6,11 +6,11 @@
   import CommunityIcon from '@/components/icons/IconCommunity.vue'
   import SupportIcon from '@/components/icons/IconSupport.vue'
   import { listen } from '@tauri-apps/api/event'
-  import { invoke } from '@tauri-apps/api'
+  import { invoke, process } from '@tauri-apps/api'
   import { useTracingStore } from '@/stores/trace'
   import { ref, computed } from 'vue'
 
-  function startScanning() {
+  async function startScanning(): Promise<void> {
     console.log('start_scanning')
     invoke('start_scanning')
   }
@@ -19,7 +19,7 @@
     const msg = JSON.parse(evt.payload.message)
     tracingStore.appendTrace(msg.fields?.payload)
   })
-  let traces = ref('Nothing to see here. Move along.')
+  const traces = ref('Nothing to see here. Move along.')
   tracingStore.$subscribe((mutation, state) => {
     traces.value = state.traces.join('\n')
   })
