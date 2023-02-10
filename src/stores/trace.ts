@@ -4,7 +4,7 @@ interface State {
   traces: string[]
 }
 
-export const useTracingStore = defineStore('tracing', {
+export const useTraceStore = defineStore('trace', {
   state: (): State => ({
     traces: []
   }),

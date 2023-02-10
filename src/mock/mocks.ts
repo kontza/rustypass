@@ -1,6 +1,21 @@
 import { mockIPC } from '@tauri-apps/api/mocks'
+import { useFileStore } from '@/stores/file'
 
-const useMockIPCIfEnabled = function (): void {
+function fillStore(): void {
+  const fileStore = useFileStore()
+
+  for (const entry of [
+    'ansible/vault.gpg',
+    'become.gpg',
+    'ldap/2017.gpg',
+    'viurvahti/become.gpg',
+    'votsonkolo/become.gpg'
+  ]) {
+    fileStore.addFile(entry)
+  }
+}
+
+export function useMockIPCIfEnabled(): void {
   if (import.meta.env.VITE_APP_MOCK_TAURI_API === 'true') {
     console.info('>>> MOCK_TAURI_API enabled')
     mockIPC((cmd, args) => {
@@ -13,7 +28,7 @@ const useMockIPCIfEnabled = function (): void {
           }
           break
         case 'start_scanning':
-          console.info('>>> start_scanning', args)
+          fillStore()
           break
         default:
           console.warn('>>> unknown cmd', cmd)
