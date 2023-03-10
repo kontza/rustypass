@@ -18,6 +18,7 @@
     tracingStore.appendTrace(msg.fields?.payload)
   })
   const fileTable = ref()
+  const filterInput = ref()
   const currentRow = ref(-1)
   const badRegExp = ref(false)
   const filteredFiles = computed(() => {
@@ -36,6 +37,7 @@
   const filterText = ref('')
 
   onMounted(() => {
+    filterInput.value.focus()
     void startScanning()
   })
 
@@ -58,29 +60,52 @@
 
   const escListener = (): void => {
     filterText.value = ''
+    currentRow.value = -1
+    filterInput.value.focus()
   }
 
   const downListener = (): void => {
-    console.error(
-      '>>> currentRow',
-      currentRow,
-      'filteredFiles',
-      filteredFiles.value.length
-    )
-    if (currentRow.value < filteredFiles.value.length) {
+    console.error('>>> downListener')
+    if (currentRow.value < filteredFiles.value.length - 1) {
       currentRow.value++
+    } else {
+      currentRow.value = filteredFiles.value.length - 1
     }
+    fileTable.value.focus()
+  }
+
+  const upListener = (): void => {
+    console.error('>>> upListener')
+    if (currentRow.value > 0) {
+      currentRow.value--
+    } else {
+      currentRow.value = 0
+    }
+    fileTable.value.focus()
+  }
+
+  const clickListener = (index: number): void => {
+    console.error('>>> active', index)
+    currentRow.value = index
+    fileTable.value.focus()
   }
 </script>
 
 <template>
-  <div class="card" @keyup.down.prevent="downListener">
+  <div
+    class="card"
+    @keydown.esc="escListener"
+    @keydown.down="downListener"
+    @keydown.up="upListener"
+  >
     <input
+      autofocus
       class="w-full input input-bordered"
       placeholder="Enter search term (regex)"
       v-model="filterText"
-      @keyup.esc="escListener"
+      ref="filterInput"
       :class="{ 'input-error': badRegExp }"
+      @keydown.esc="escListener"
     />
     <label class="label" v-if="badRegExp">
       <span class="label-text-alt">Invalid regular expression</span>
@@ -91,6 +116,9 @@
           v-for="(file, index) in filteredFiles"
           :key="index"
           :class="{ active: index === currentRow }"
+          @click="clickListener(index)"
+          @keydown.down="downListener"
+          @keyup="upListener"
         >
           <td>{{ file }}</td>
         </tr>
