@@ -1,11 +1,11 @@
 <script setup lang="ts">
-  import TheWelcome from '@/components/TheWelcome.vue'
+  import MainView from '@/components/MainView.vue'
 </script>
 
 <template>
   <main>
     <Suspense>
-      <TheWelcome />
+      <MainView />
     </Suspense>
   </main>
 </template>
