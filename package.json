@@ -14,6 +14,7 @@
   "dependencies": {
     "@tauri-apps/api": "^1.2.0",
     "@vue/eslint-config-standard-with-typescript": "^8.0.0",
+    "@vueuse/core": "^9.13.0",
     "pinia": "^2.0.27",
     "vue": "^3.2.41"
   },

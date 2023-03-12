@@ -4,6 +4,7 @@
   import { useTraceStore } from '@/stores/trace'
   import { useFileStore } from '@/stores/file'
   import { ref, watch, computed, onMounted } from 'vue'
+  import { onKeyStroke } from '@vueuse/core'
 
   async function startScanning(): Promise<void> {
     console.log('start_scanning')
@@ -35,6 +36,10 @@
     }
   })
   const filterText = ref('')
+  const clickListener = (index: number): void => {
+    currentRow.value = index
+    fileTable.value.focus()
+  }
 
   onMounted(() => {
     filterInput.value.focus()
@@ -58,54 +63,46 @@
     }
   )
 
-  const escListener = (): void => {
-    filterText.value = ''
-    currentRow.value = -1
-    filterInput.value.focus()
-  }
-
-  const downListener = (): void => {
-    console.error('>>> downListener')
+  onKeyStroke('ArrowDown', (e: KeyboardEvent) => {
     if (currentRow.value < filteredFiles.value.length - 1) {
       currentRow.value++
     } else {
       currentRow.value = filteredFiles.value.length - 1
     }
     fileTable.value.focus()
-  }
-
-  const upListener = (): void => {
-    console.error('>>> upListener')
+  })
+  onKeyStroke('ArrowUp', (e: KeyboardEvent) => {
     if (currentRow.value > 0) {
       currentRow.value--
     } else {
       currentRow.value = 0
     }
     fileTable.value.focus()
-  }
-
-  const clickListener = (index: number): void => {
-    console.error('>>> active', index)
-    currentRow.value = index
-    fileTable.value.focus()
-  }
+  })
+  onKeyStroke('Escape', (e: KeyboardEvent) => {
+    filterText.value = ''
+    currentRow.value = -1
+    filterInput.value.focus()
+  })
+  onKeyStroke('Enter', (e: KeyboardEvent) => {
+    if (filteredFiles.value.length === 1) {
+      currentRow.value = 0
+    }
+  })
 </script>
 
 <template>
-  <div
-    class="card"
-    @keydown.esc="escListener"
-    @keydown.down="downListener"
-    @keydown.up="upListener"
-  >
+  <div class="card">
     <input
       autofocus
       class="w-full input input-bordered"
-      placeholder="Enter search term (regex)"
+      placeholder="Enter
+    search term (regex)"
       v-model="filterText"
       ref="filterInput"
-      :class="{ 'input-error': badRegExp }"
-      @keydown.esc="escListener"
+      :class="{
+        'input-error': badRegExp
+      }"
     />
     <label class="label" v-if="badRegExp">
       <span class="label-text-alt">Invalid regular expression</span>
@@ -117,8 +114,6 @@
           :key="index"
           :class="{ active: index === currentRow }"
           @click="clickListener(index)"
-          @keydown.down="downListener"
-          @keyup="upListener"
         >
           <td>{{ file }}</td>
         </tr>
