@@ -5,6 +5,12 @@
   import { useFileStore } from '@/stores/file'
   import { ref, watch, computed, onMounted } from 'vue'
   import { onKeyStroke } from '@vueuse/core'
+  import { writeText } from '@tauri-apps/api/clipboard'
+  import {
+    isPermissionGranted,
+    requestPermission,
+    sendNotification
+  } from '@tauri-apps/api/notification'
 
   async function startScanning(): Promise<void> {
     console.log('start_scanning')
@@ -15,13 +21,13 @@
   const tracingStore = useTraceStore()
   const fileStore = useFileStore()
   // eslint-disable-next-line
-  const unlisten = await listen('TRACE', (evt: any) => {
+  const traceUnlistener = await listen('TRACE', (evt: any) => {
     const msg = JSON.parse(evt.payload.message)
     tracingStore.appendTrace(msg.fields?.payload)
     console.info('TRACE', msg.fields?.payload)
   })
   // eslint-disable-next-line
-  const itemListener = await listen('ITEM_FOUND', (evt: any) => {
+  const itemUnlistener = await listen('ITEM_FOUND', (evt: any) => {
     fileStore.addFile(evt.payload.path)
   })
   const fileTable = ref()

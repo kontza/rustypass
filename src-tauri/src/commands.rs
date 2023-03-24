@@ -3,6 +3,7 @@ use crate::config::{
 };
 use crate::scanner;
 use copypasta::{ClipboardContext, ClipboardProvider};
+use notifica;
 use std::path::PathBuf;
 use std::process::Command;
 use tracing::{event, Level};
@@ -10,6 +11,11 @@ use tracing::{event, Level};
 #[derive(Clone, serde::Serialize)]
 struct ItemPayload {
     path: String,
+}
+
+#[derive(Clone, serde::Serialize)]
+struct SecretPayload {
+    secret: String,
 }
 
 fn get_scan_dir() -> String {
@@ -28,7 +34,6 @@ fn get_scan_dir() -> String {
 #[tauri::command]
 pub fn start_scanning(window: tauri::Window) {
     let scan_dir = get_scan_dir();
-    println!("Start scanning in '{}'...", &scan_dir);
     let rx = scanner::do_start_scanning(&PathBuf::from(&scan_dir));
     for received in rx {
         let rcv_path = PathBuf::from(received.path.clone());
@@ -83,6 +88,7 @@ pub fn process_secret(secret: String) {
                 let mut lines = stdout_string.lines();
                 let mut ctx = ClipboardContext::new().unwrap();
                 ctx.set_contents(lines.next().unwrap().to_string()).unwrap();
+                notifica::notify(env!("CARGO_PKG_NAME"), "Secret copied to clipboard.").unwrap();
             }
             Err(e) => println!("Would show an error: {}", e),
         };

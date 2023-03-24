@@ -17,7 +17,7 @@ tauri-build = { version = "1.2.1", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2.3", features = ["api-all"] }
+tauri = { version = "1.2.3", features = ["clipboard", "clipboard-write-text", "notification-all"] }
 walkdir = "2.3.2"
 xdg = "2.4.1"
 config = "0.13.3"
@@ -26,6 +26,7 @@ shellexpand = "3.0.0"
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["json"] }
 copypasta = "0.8.2"
+notifica = "3.0.2"
 
 [features]
 # by default Tauri runs in production mode
