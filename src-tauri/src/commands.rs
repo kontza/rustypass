@@ -2,10 +2,10 @@ use crate::config::{
     config_dir::ConfigDir, ConfigStore, ConfigStoreInterface, SCAN_DIRECTORY_VALUE,
 };
 use crate::scanner;
-use copypasta::{ClipboardContext, ClipboardProvider};
 use notifica;
 use std::path::PathBuf;
 use std::process::Command;
+use tauri::ClipboardManager;
 use tracing::{event, Level};
 
 #[derive(Clone, serde::Serialize)]
@@ -72,7 +72,7 @@ pub fn start_scanning(window: tauri::Window) {
 
 #[allow(dead_code)]
 #[tauri::command]
-pub fn process_secret(secret: String) {
+pub fn process_secret(secret: String, app_handle: tauri::AppHandle) {
     let secret_file: PathBuf = [get_scan_dir(), secret].iter().collect();
 
     let result = Command::new("gpg")
@@ -86,8 +86,8 @@ pub fn process_secret(secret: String) {
         match std::str::from_utf8(&result.stdout) {
             Ok(stdout_string) => {
                 let mut lines = stdout_string.lines();
-                let mut ctx = ClipboardContext::new().unwrap();
-                ctx.set_contents(lines.next().unwrap().to_string()).unwrap();
+                let secret = lines.next().unwrap().to_string();
+                app_handle.clipboard_manager().write_text(secret).unwrap();
                 notifica::notify(env!("CARGO_PKG_NAME"), "Secret copied to clipboard.").unwrap();
             }
             Err(e) => println!("Would show an error: {}", e),
