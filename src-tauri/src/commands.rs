@@ -5,6 +5,7 @@ use crate::scanner;
 use notifica;
 use std::path::PathBuf;
 use std::process::Command;
+use tauri::api::notification::Notification;
 use tauri::ClipboardManager;
 use tracing::{event, Level};
 
@@ -88,7 +89,14 @@ pub fn process_secret(secret: String, app_handle: tauri::AppHandle) {
                 let mut lines = stdout_string.lines();
                 let secret = lines.next().unwrap().to_string();
                 app_handle.clipboard_manager().write_text(secret).unwrap();
-                notifica::notify(env!("CARGO_PKG_NAME"), "Secret copied to clipboard.").unwrap();
+                // let bundle_identifier = app_handle.config().tauri.bundle.identifier.clone();
+                // Notification::new(bundle_identifier)
+                //     .title(env!("CARGO_PKG_NAME"))
+                //     .body("Secret copied to the clipboard.")
+                //     .show()
+                //     .unwrap();
+                notifica::notify(env!("CARGO_PKG_NAME"), "Secret copied to the clipboard.")
+                    .unwrap();
             }
             Err(e) => println!("Would show an error: {}", e),
         };
