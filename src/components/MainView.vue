@@ -9,14 +9,20 @@
   async function startScanning(): Promise<void> {
     console.log('start_scanning')
     fileStore.clearStore()
-    invoke('start_scanning')
+    await invoke('start_scanning')
   }
   const MINIMUM_FILTER_LENGTH = 2
   const tracingStore = useTraceStore()
   const fileStore = useFileStore()
+  // eslint-disable-next-line
   const unlisten = await listen('TRACE', (evt: any) => {
     const msg = JSON.parse(evt.payload.message)
     tracingStore.appendTrace(msg.fields?.payload)
+    console.info('TRACE', msg.fields?.payload)
+  })
+  // eslint-disable-next-line
+  const itemListener = await listen('ITEM_FOUND', (evt: any) => {
+    fileStore.addFile(evt.payload.path)
   })
   const fileTable = ref()
   const filterInput = ref()
@@ -25,7 +31,7 @@
   const filteredFiles = computed(() => {
     if (filterText.value.length >= MINIMUM_FILTER_LENGTH) {
       try {
-        const filter = new RegExp(filterText.value, 'i')
+        const filter = new RegExp(filterText.value.replace(' ', '.*'), 'i')
         return fileStore.files.filter((file) => filter.test(file))
       } catch (error) {
         // Probably a bad regexp, return all files.
@@ -70,6 +76,7 @@
       currentRow.value = filteredFiles.value.length - 1
     }
     fileTable.value.focus()
+    filterInput.value.blur()
   })
   onKeyStroke('ArrowUp', (e: KeyboardEvent) => {
     if (currentRow.value > 0) {
@@ -78,6 +85,7 @@
       currentRow.value = 0
     }
     fileTable.value.focus()
+    filterInput.value.blur()
   })
   onKeyStroke('Escape', (e: KeyboardEvent) => {
     filterText.value = ''
@@ -88,6 +96,11 @@
     if (filteredFiles.value.length === 1) {
       currentRow.value = 0
     }
+    if (currentRow.value >= 0) {
+      void invoke('process_secret', {
+        secret: filteredFiles.value[currentRow.value]
+      })
+    }
   })
 </script>
 
@@ -96,8 +109,7 @@
     <input
       autofocus
       class="w-full input input-bordered"
-      placeholder="Enter
-    search term (regex)"
+      placeholder="Enter search term (regex)"
       v-model="filterText"
       ref="filterInput"
       :class="{

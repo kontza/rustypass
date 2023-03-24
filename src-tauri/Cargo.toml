@@ -25,6 +25,7 @@ dirs = "4.0.0"
 shellexpand = "3.0.0"
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["json"] }
+copypasta = "0.8.2"
 
 [features]
 # by default Tauri runs in production mode

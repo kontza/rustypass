@@ -30,6 +30,9 @@ export function useMockIPCIfEnabled(): void {
         case 'start_scanning':
           fillStore()
           break
+        case 'process_secret':
+          console.info('>>> process_secret', args)
+          break
         default:
           console.warn('>>> unknown cmd', cmd)
           break

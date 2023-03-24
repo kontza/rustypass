@@ -3,14 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::path::PathBuf;
-
-use rustypass::{
-    config::{config_dir::ConfigDir, ConfigStore, ConfigStoreInterface, SCAN_DIRECTORY_VALUE},
-    scanner,
-};
 use tauri::Manager;
-use tracing::{event, Level};
 use tracing_subscriber;
 
 struct AppTraceWriter {
@@ -39,54 +32,6 @@ impl std::io::Write for AppTraceWriter {
     }
 }
 
-#[derive(Clone, serde::Serialize)]
-struct ItemPayload {
-    path: String,
-}
-
-#[tauri::command]
-fn start_scanning(window: tauri::Window) {
-    let c = ConfigDir;
-    let mut bd = ConfigStore {
-        config_dir: Box::new(c),
-    };
-    let fallback = shellexpand::tilde("~/.local/share/gopass/stores");
-    let scan_dir = match bd.get_config(SCAN_DIRECTORY_VALUE) {
-        Some(value) => value,
-        None => fallback.to_string(),
-    };
-    let rx = scanner::do_start_scanning(&PathBuf::from(&scan_dir));
-    for received in rx {
-        let rcv_path = PathBuf::from(received.path.clone());
-        match received.result {
-            Ok(result) => {
-                if result == true {
-                    let payload = format!(
-                        "Found file: {:?}",
-                        rcv_path.strip_prefix(&scan_dir).unwrap()
-                    );
-                    event!(Level::INFO, payload);
-                    window
-                        .emit(
-                            "ITEM_FOUND",
-                            ItemPayload {
-                                path: received.path,
-                            },
-                        )
-                        .unwrap();
-                } else {
-                    let payload = format!("Unknown media type: {}", received.path);
-                    event!(Level::INFO, payload);
-                }
-            }
-            Err(err) => {
-                let payload = format!("{}: {:?}", rcv_path.display(), err);
-                event!(Level::ERROR, payload);
-            }
-        }
-    }
-}
-
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -103,7 +48,10 @@ fn main() {
                 .init();
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![start_scanning])
+        .invoke_handler(tauri::generate_handler![
+            rustypass::commands::start_scanning,
+            rustypass::commands::process_secret,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
