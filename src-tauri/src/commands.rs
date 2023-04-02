@@ -5,7 +5,6 @@ use crate::scanner;
 use notifica;
 use std::path::PathBuf;
 use std::process::Command;
-use tauri::api::notification::Notification;
 use tauri::ClipboardManager;
 use tracing::{event, Level};
 

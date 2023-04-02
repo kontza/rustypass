@@ -5,12 +5,6 @@
   import { useFileStore } from '@/stores/file'
   import { ref, watch, computed, onMounted } from 'vue'
   import { onKeyStroke } from '@vueuse/core'
-  import { writeText } from '@tauri-apps/api/clipboard'
-  import {
-    isPermissionGranted,
-    requestPermission,
-    sendNotification
-  } from '@tauri-apps/api/notification'
 
   async function startScanning(): Promise<void> {
     console.log('start_scanning')
@@ -97,6 +91,7 @@
     filterText.value = ''
     currentRow.value = -1
     filterInput.value.focus()
+    void startScanning()
   })
   onKeyStroke('Enter', (e: KeyboardEvent) => {
     if (filteredFiles.value.length === 1) {
@@ -109,33 +104,35 @@
     }
   })
 </script>
-
+<style scoped></style>
 <template>
-  <div class="card">
-    <input
-      autofocus
-      class="w-full input input-bordered"
-      placeholder="Enter search term (regex)"
-      v-model="filterText"
-      ref="filterInput"
-      :class="{
-        'input-error': badRegExp
-      }"
-    />
-    <label class="label" v-if="badRegExp">
-      <span class="label-text-alt">Invalid regular expression</span>
-    </label>
-    <table ref="fileTable" class="table table-zebra table-compact w-full">
-      <tbody>
-        <tr
-          v-for="(file, index) in filteredFiles"
-          :key="index"
-          :class="{ active: index === currentRow }"
-          @click="clickListener(index)"
-        >
-          <td>{{ file }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <table ref="fileTable" class="table table-zebra table-compact w-full">
+    <thead class="sticky top-0">
+      <tr>
+        <input
+          autofocus
+          class="w-full input input-bordered"
+          placeholder="Enter search term (regex)"
+          v-model="filterText"
+          ref="filterInput"
+          :class="{
+            'input-error': badRegExp
+          }"
+        />
+        <label class="label" v-if="badRegExp">
+          <span class="label-text-alt">Invalid regular expression</span>
+        </label>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        v-for="(file, index) in filteredFiles"
+        :key="index"
+        :class="{ active: index === currentRow }"
+        @click="clickListener(index)"
+      >
+        <td>{{ file }}</td>
+      </tr>
+    </tbody>
+  </table>
 </template>
