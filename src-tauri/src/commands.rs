@@ -2,7 +2,6 @@ use crate::config::{
     config_dir::ConfigDir, ConfigStore, ConfigStoreInterface, SCAN_DIRECTORY_VALUE,
 };
 use crate::scanner;
-use notifica;
 use std::path::PathBuf;
 use std::process::Command;
 use tauri::ClipboardManager;
@@ -72,7 +71,7 @@ pub fn start_scanning(window: tauri::Window) {
 
 #[allow(dead_code)]
 #[tauri::command]
-pub fn process_secret(secret: String, app_handle: tauri::AppHandle) {
+pub fn process_secret(window: tauri::Window, secret: String, app_handle: tauri::AppHandle) {
     let secret_file: PathBuf = [get_scan_dir(), secret].iter().collect();
 
     let result = Command::new("gpg")
@@ -81,23 +80,16 @@ pub fn process_secret(secret: String, app_handle: tauri::AppHandle) {
         .output()
         .unwrap();
     if !result.status.success() {
-        println!("Would show an error.");
+        window.emit("SECRET_FAILED", "").unwrap()
     } else {
         match std::str::from_utf8(&result.stdout) {
             Ok(stdout_string) => {
                 let mut lines = stdout_string.lines();
                 let secret = lines.next().unwrap().to_string();
                 app_handle.clipboard_manager().write_text(secret).unwrap();
-                // let bundle_identifier = app_handle.config().tauri.bundle.identifier.clone();
-                // Notification::new(bundle_identifier)
-                //     .title(env!("CARGO_PKG_NAME"))
-                //     .body("Secret copied to the clipboard.")
-                //     .show()
-                //     .unwrap();
-                notifica::notify(env!("CARGO_PKG_NAME"), "Secret copied to the clipboard.")
-                    .unwrap();
+                window.emit("SECRET_READY", "").unwrap();
             }
-            Err(e) => println!("Would show an error: {}", e),
+            Err(e) => window.emit("SECRET_FAILED", format!("{}", e)).unwrap(),
         };
     }
 }

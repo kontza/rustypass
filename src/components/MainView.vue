@@ -14,6 +14,9 @@
   const MINIMUM_FILTER_LENGTH = 2
   const tracingStore = useTraceStore()
   const fileStore = useFileStore()
+  const copiedToClipboard = ref(false)
+  const secretFailed = ref(false)
+  const LABEL_TIMEOUT = 5000
   // eslint-disable-next-line
   const traceUnlistener = await listen('TRACE', (evt: any) => {
     const msg = JSON.parse(evt.payload.message)
@@ -23,6 +26,16 @@
   // eslint-disable-next-line
   const itemUnlistener = await listen('ITEM_FOUND', (evt: any) => {
     fileStore.addFile(evt.payload.path)
+  })
+  // eslint-disable-next-line
+  const secretFailedListener = await listen('SECRET_FAILED', (evt: any) => {
+    secretFailed.value = true
+    setTimeout(() => (secretFailed.value = false), 2 * LABEL_TIMEOUT)
+  })
+  // eslint-disable-next-line
+  const secretReadyListener = await listen('SECRET_READY', (evt: any) => {
+    copiedToClipboard.value = true
+    setTimeout(() => (copiedToClipboard.value = false), LABEL_TIMEOUT)
   })
   const fileTable = ref()
   const filterInput = ref()
@@ -90,6 +103,8 @@
   onKeyStroke('Escape', (e: KeyboardEvent) => {
     filterText.value = ''
     currentRow.value = -1
+    secretFailed.value = false
+    copiedToClipboard.value = false
     filterInput.value.focus()
     void startScanning()
   })
@@ -119,8 +134,16 @@
             'input-error': badRegExp
           }"
         />
-        <label class="label" v-if="badRegExp">
-          <span class="label-text-alt">Invalid regular expression</span>
+        <label class="label">
+          <span v-if="badRegExp" class="label-text-alt"
+            >Invalid regular expression
+          </span>
+          <span v-if="copiedToClipboard" class="label-text-alt"
+            >{{ filteredFiles[currentRow] }}: copied to the clipboard</span
+          >
+          <span v-if="secretFailed" class="label-text-alt text-error"
+            >{{ filteredFiles[currentRow] }}: failed to get the secret</span
+          >
         </label>
       </tr>
     </thead>
