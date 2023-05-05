@@ -1,6 +1,6 @@
 [package]
 name = "rustypass"
-version = "0.1.0"
+version = "1.0.0"
 description = "A simple app to copy _gopass_ passwords to clipboard."
 authors = ["Juha Ruotsalainen <juha.ruotsalainen@iki.fi>"]
 license = "MIT"
