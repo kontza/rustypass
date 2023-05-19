@@ -3,7 +3,11 @@
     windows_subsystem = "windows"
 )]
 
-use tauri::Manager;
+use std::alloc::System;
+
+use tauri::{
+    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 use tracing_subscriber;
 
 struct AppTraceWriter {
@@ -33,7 +37,24 @@ impl std::io::Write for AppTraceWriter {
 }
 
 fn main() {
+    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
+    let show = CustomMenuItem::new("show".to_string(), "Show");
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(show)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(quit);
+    let tray = SystemTray::new().with_menu(tray_menu);
     tauri::Builder::default()
+        .system_tray(tray)
+        .on_system_tray_event(|_, event| match event {
+            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+                "quit" => {
+                    std::process::exit(0);
+                }
+                _ => {}
+            },
+            _ => {}
+        })
         .setup(|app| {
             let main_window = app.get_window("main").unwrap();
             let make_my_writer = move || -> Box<dyn std::io::Write> {
