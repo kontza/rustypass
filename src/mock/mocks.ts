@@ -1,10 +1,7 @@
 import { mockIPC } from '@tauri-apps/api/mocks'
-import { useFileStore } from '@/stores/file'
 
-function fillStore(): void {
-  const fileStore = useFileStore()
-
-  for (const entry of [
+export function fillStore(): string[] {
+  return [
     'gothse.gpg',
     'gibsonfirebreatha.gpg',
     'greenpayne.gpg',
@@ -47,9 +44,7 @@ function fillStore(): void {
     'edwabroom/fralline.gpg',
     'hayesilda/grangrdson.gpg',
     'jenkinsshine.gpg'
-  ]) {
-    fileStore.addFile(entry)
-  }
+  ]
 }
 
 export function useMockIPCIfEnabled(): void {
@@ -65,7 +60,7 @@ export function useMockIPCIfEnabled(): void {
           }
           break
         case 'start_scanning':
-          fillStore()
+          console.info('>>> start_scanning', args)
           break
         case 'process_secret':
           console.info('>>> process_secret', args)
@@ -77,4 +72,3 @@ export function useMockIPCIfEnabled(): void {
     })
   }
 }
-export default useMockIPCIfEnabled

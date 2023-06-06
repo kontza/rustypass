@@ -1,31 +1,27 @@
 <script setup lang="ts">
   import { listen } from '@tauri-apps/api/event'
   import { invoke } from '@tauri-apps/api'
-  import { useTraceStore } from '@/stores/trace'
-  import { useFileStore } from '@/stores/file'
   import { ref, watch, computed, onMounted } from 'vue'
   import { onKeyStroke } from '@vueuse/core'
+  // import { fillStore, useMockIPCIfEnabled } from '@/mock/mocks'
+  // useMockIPCIfEnabled()
 
   async function startScanning(): Promise<void> {
-    console.log('start_scanning')
-    fileStore.clearStore()
+    foundFiles.value = [] // fillStore()
     await invoke('start_scanning')
   }
   const MINIMUM_FILTER_LENGTH = 2
-  const tracingStore = useTraceStore()
-  const fileStore = useFileStore()
   const copiedToClipboard = ref(false)
   const secretFailed = ref(false)
   const LABEL_TIMEOUT = 5000
   // eslint-disable-next-line
   const traceUnlistener = await listen('TRACE', (evt: any) => {
     const msg = JSON.parse(evt.payload.message)
-    tracingStore.appendTrace(msg.fields?.payload)
     console.info('TRACE', msg.fields?.payload)
   })
   // eslint-disable-next-line
   const itemUnlistener = await listen('ITEM_FOUND', (evt: any) => {
-    fileStore.addFile(evt.payload.path)
+    foundFiles.value.push(evt.payload.path)
   })
   // eslint-disable-next-line
   const secretFailedListener = await listen('SECRET_FAILED', (evt: any) => {
@@ -37,6 +33,7 @@
     copiedToClipboard.value = true
     setTimeout(() => (copiedToClipboard.value = false), LABEL_TIMEOUT)
   })
+  const foundFiles = ref([] as string[])
   const fileTable = ref()
   const filterInput = ref()
   const currentRow = ref(-1)
@@ -45,17 +42,17 @@
     if (filterText.value.length >= MINIMUM_FILTER_LENGTH) {
       try {
         const filter = new RegExp(filterText.value.replace(' ', '.*'), 'i')
-        const rv = fileStore.files.filter((file) => filter.test(file))
+        const rv = foundFiles.value.filter((file) => filter.test(file))
         if (rv.length === 1) {
           rv.push('')
         }
         return rv
       } catch (error) {
         // Probably a bad regexp, return all files.
-        return fileStore.files
+        return foundFiles.value
       }
     } else {
-      return fileStore.files
+      return foundFiles.value
     }
   })
   const filterText = ref('')
@@ -113,7 +110,10 @@
     void startScanning()
   })
   onKeyStroke('Enter', (e: KeyboardEvent) => {
-    if (filteredFiles.value.length === 1) {
+    if (
+      filteredFiles.value.length <= 2 &&
+      filteredFiles.value[filteredFiles.value.length - 1] === ''
+    ) {
       currentRow.value = 0
     }
     if (currentRow.value >= 0) {
@@ -123,13 +123,15 @@
     }
   })
 </script>
-<style scoped></style>
+<style scoped>
+  select {
+    height: 94%;
+  }
+</style>
 <template>
   <div class="toast toast-top toast-end">
     <div v-if="copiedToClipboard" class="alert alert-success">
-      <span class="label-text-alt"
-        >{{ filteredFiles[currentRow] }}: copied to the clipboard</span
-      >
+      <span>{{ filteredFiles[currentRow] }}: copied to the clipboard</span>
     </div>
     <div v-if="secretFailed" class="alert alert-error">
       <span>{{ filteredFiles[currentRow] }}: failed to get the secret</span>
@@ -151,7 +153,8 @@
   />
 
   <select
-    class="select select-bordered w-full h-full"
+    ref="fileTable"
+    class="select select-bordered w-full"
     :size="filteredFiles.length"
   >
     <option
