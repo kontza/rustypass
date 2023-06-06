@@ -45,7 +45,11 @@
     if (filterText.value.length >= MINIMUM_FILTER_LENGTH) {
       try {
         const filter = new RegExp(filterText.value.replace(' ', '.*'), 'i')
-        return fileStore.files.filter((file) => filter.test(file))
+        const rv = fileStore.files.filter((file) => filter.test(file))
+        if (rv.length === 1) {
+          rv.push('')
+        }
+        return rv
       } catch (error) {
         // Probably a bad regexp, return all files.
         return fileStore.files
@@ -121,41 +125,42 @@
 </script>
 <style scoped></style>
 <template>
-  <table ref="fileTable" class="table table-zebra table-compact w-full">
-    <thead class="sticky top-0">
-      <tr>
-        <input
-          autofocus
-          class="w-full input input-bordered"
-          placeholder="Enter search term (regex)"
-          v-model="filterText"
-          ref="filterInput"
-          :class="{
-            'input-error': badRegExp
-          }"
-        />
-        <label class="label">
-          <span v-if="badRegExp" class="label-text-alt"
-            >Invalid regular expression
-          </span>
-          <span v-if="copiedToClipboard" class="label-text-alt"
-            >{{ filteredFiles[currentRow] }}: copied to the clipboard</span
-          >
-          <span v-if="secretFailed" class="label-text-alt text-error"
-            >{{ filteredFiles[currentRow] }}: failed to get the secret</span
-          >
-        </label>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="(file, index) in filteredFiles"
-        :key="index"
-        :class="{ active: index === currentRow }"
-        @click="clickListener(index)"
+  <div class="toast toast-top toast-end">
+    <div v-if="copiedToClipboard" class="alert alert-success">
+      <span class="label-text-alt"
+        >{{ filteredFiles[currentRow] }}: copied to the clipboard</span
       >
-        <td>{{ file }}</td>
-      </tr>
-    </tbody>
-  </table>
+    </div>
+    <div v-if="secretFailed" class="alert alert-error">
+      <span>{{ filteredFiles[currentRow] }}: failed to get the secret</span>
+    </div>
+    <div v-if="badRegExp" class="alert alert-error">
+      <span>Invalid regular expression</span>
+    </div>
+  </div>
+
+  <input
+    autofocus
+    class="w-full input input-bordered"
+    placeholder="Enter search term (regex)"
+    v-model="filterText"
+    ref="filterInput"
+    :class="{
+      'input-error': badRegExp
+    }"
+  />
+
+  <select
+    class="select select-bordered w-full h-full"
+    :size="filteredFiles.length"
+  >
+    <option
+      v-for="(file, index) in filteredFiles"
+      :key="index"
+      @click="clickListener(index)"
+      :disabled="file === ''"
+    >
+      {{ file }}
+    </option>
+  </select>
 </template>
