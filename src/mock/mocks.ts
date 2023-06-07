@@ -1,4 +1,5 @@
 import { mockIPC } from '@tauri-apps/api/mocks'
+import { envMocksEnabled, envTraceEnabled } from '@/environment'
 
 export function fillStore(): string[] {
   return [
@@ -48,25 +49,25 @@ export function fillStore(): string[] {
 }
 
 export function useMockIPCIfEnabled(): void {
-  if (import.meta.env.VITE_APP_MOCK_TAURI_API === 'true') {
-    console.info('>>> MOCK_TAURI_API enabled')
+  if (envMocksEnabled()) {
+    envTraceEnabled() && console.info('>>> MOCK_TAURI_API enabled')
     mockIPC((cmd, args) => {
       switch (cmd) {
         case 'tauri':
           switch (args.__tauriModule) {
             case 'Event':
-              console.info('>>> Event', args.message)
+              envTraceEnabled() && console.info('>>> Event', args.message)
               break
           }
           break
         case 'start_scanning':
-          console.info('>>> start_scanning', args)
+          envTraceEnabled() && console.info('>>> start_scanning', args)
           break
         case 'process_secret':
-          console.info('>>> process_secret', args)
+          envTraceEnabled() && console.info('>>> process_secret', args)
           break
         default:
-          console.warn('>>> unknown cmd', cmd)
+          envTraceEnabled() && console.warn('>>> unknown cmd', cmd)
           break
       }
     })

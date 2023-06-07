@@ -1,0 +1,4 @@
+#!/bin/sh
+export VITE_MOCK_TAURI_API=false
+export VITE_TRACE_ENABLED=false
+./node_modules/.bin/tauri dev

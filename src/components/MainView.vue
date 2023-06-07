@@ -3,11 +3,17 @@
   import { invoke } from '@tauri-apps/api'
   import { ref, watch, computed, onMounted } from 'vue'
   import { onKeyStroke } from '@vueuse/core'
-  // import { fillStore, useMockIPCIfEnabled } from '@/mock/mocks'
-  // useMockIPCIfEnabled()
+  import { envMocksEnabled, envTraceEnabled } from '@/environment'
+  import { fillStore, useMockIPCIfEnabled } from '@/mock/mocks'
+
+  useMockIPCIfEnabled()
 
   async function startScanning(): Promise<void> {
-    foundFiles.value = [] // fillStore()
+    if (envMocksEnabled()) {
+      foundFiles.value = fillStore()
+    } else {
+      foundFiles.value = []
+    }
     await invoke('start_scanning')
   }
   const MINIMUM_FILTER_LENGTH = 2
@@ -17,7 +23,9 @@
   // eslint-disable-next-line
   const traceUnlistener = await listen('TRACE', (evt: any) => {
     const msg = JSON.parse(evt.payload.message)
-    console.info('TRACE', msg.fields?.payload)
+    if (envTraceEnabled()) {
+      console.info('TRACE', msg.fields?.payload)
+    }
   })
   // eslint-disable-next-line
   const itemUnlistener = await listen('ITEM_FOUND', (evt: any) => {
@@ -123,11 +131,9 @@
     }
   })
 </script>
-<style scoped>
-  select {
-    height: 94%;
-  }
-</style>
+
+<style scoped></style>
+
 <template>
   <div class="toast toast-top toast-end">
     <div v-if="copiedToClipboard" class="alert alert-success">
@@ -141,29 +147,31 @@
     </div>
   </div>
 
-  <input
-    autofocus
-    class="w-full input input-bordered"
-    placeholder="Enter search term (regex)"
-    v-model="filterText"
-    ref="filterInput"
-    :class="{
-      'input-error': badRegExp
-    }"
-  />
+  <div class="h-full" style="flex-direction: column; display: flex">
+    <input
+      autofocus
+      class="w-full flex-none input input-bordered"
+      placeholder="Enter search term (regex)"
+      v-model="filterText"
+      ref="filterInput"
+      :class="{
+        'input-error': badRegExp
+      }"
+    />
 
-  <select
-    ref="fileTable"
-    class="select select-bordered w-full"
-    :size="filteredFiles.length"
-  >
-    <option
-      v-for="(file, index) in filteredFiles"
-      :key="index"
-      @click="clickListener(index)"
-      :disabled="file === ''"
+    <select
+      ref="fileTable"
+      class="w-full flex-auto select select-bordered"
+      :size="filteredFiles.length"
     >
-      {{ file }}
-    </option>
-  </select>
+      <option
+        v-for="(file, index) in filteredFiles"
+        :key="index"
+        @click="clickListener(index)"
+        :disabled="file === ''"
+      >
+        {{ file }}
+      </option>
+    </select>
+  </div>
 </template>

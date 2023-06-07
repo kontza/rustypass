@@ -9,7 +9,7 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
-    "tauri": "tauri"
+    "tauri": "./tauri-dev"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.3.0",

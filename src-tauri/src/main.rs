@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::alloc::System;
+// use std::alloc::System;
 
 use tauri::{
     CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
