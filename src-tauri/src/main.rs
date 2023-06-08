@@ -6,7 +6,7 @@
 // use std::alloc::System;
 
 use tauri::{
-    CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+    App, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
 use tracing_subscriber;
 
@@ -44,6 +44,20 @@ fn main() {
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(quit);
     let tray = SystemTray::new().with_menu(tray_menu);
+    let create_window = |app: &mut App| {
+        let main_window = app.get_window("main").unwrap();
+        let make_my_writer = move || -> Box<dyn std::io::Write> {
+            Box::new(AppTraceWriter {
+                window: main_window.clone(),
+            })
+        };
+        let format = tracing_subscriber::fmt::format().json();
+        tracing_subscriber::fmt()
+            .event_format(format)
+            .with_writer(make_my_writer)
+            .init();
+        Ok(())
+    };
     tauri::Builder::default()
         .system_tray(tray)
         .on_system_tray_event(|_, event| match event {
@@ -55,20 +69,7 @@ fn main() {
             },
             _ => {}
         })
-        .setup(|app| {
-            let main_window = app.get_window("main").unwrap();
-            let make_my_writer = move || -> Box<dyn std::io::Write> {
-                Box::new(AppTraceWriter {
-                    window: main_window.clone(),
-                })
-            };
-            let format = tracing_subscriber::fmt::format().json();
-            tracing_subscriber::fmt()
-                .event_format(format)
-                .with_writer(make_my_writer)
-                .init();
-            Ok(())
-        })
+        .setup(create_window)
         .invoke_handler(tauri::generate_handler![
             rustypass::commands::start_scanning,
             rustypass::commands::process_secret,
