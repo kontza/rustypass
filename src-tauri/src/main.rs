@@ -5,9 +5,7 @@
 
 // use std::alloc::System;
 
-use tauri::{
-    App, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
-};
+use tauri::{CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 use tracing_subscriber;
 
 struct AppTraceWriter {
@@ -37,39 +35,52 @@ impl std::io::Write for AppTraceWriter {
 }
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let show = CustomMenuItem::new("show".to_string(), "Show");
+    const QUIT: &str = "quit";
+    const SHOW: &str = "show";
+    const QUIT_LABEL: &str = "Quit";
+    const SHOW_LABEL: &str = "Show";
+
+    let quit = CustomMenuItem::new(QUIT.to_string(), QUIT_LABEL);
+    let show = CustomMenuItem::new(SHOW.to_string(), SHOW_LABEL);
     let tray_menu = SystemTrayMenu::new()
         .add_item(show)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(quit);
     let tray = SystemTray::new().with_menu(tray_menu);
-    let create_window = |app: &mut App| {
-        let main_window = app.get_window("main").unwrap();
-        let make_my_writer = move || -> Box<dyn std::io::Write> {
-            Box::new(AppTraceWriter {
-                window: main_window.clone(),
-            })
-        };
-        let format = tracing_subscriber::fmt::format().json();
-        tracing_subscriber::fmt()
-            .event_format(format)
-            .with_writer(make_my_writer)
-            .init();
-        Ok(())
-    };
     tauri::Builder::default()
         .system_tray(tray)
-        .on_system_tray_event(|_, event| match event {
-            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
-                "quit" => {
-                    std::process::exit(0);
-                }
+        .on_system_tray_event(|app, event| {
+            match event {
+                SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+                    QUIT => {
+                        std::process::exit(0);
+                    }
+                    SHOW => {
+                        let main_window = tauri::WindowBuilder::new(
+                            app,
+                            "pääikkuna",
+                            tauri::WindowUrl::App("index.html".into()),
+                        )
+                        .build()
+                        .unwrap();
+                        let make_my_writer = move || -> Box<dyn std::io::Write> {
+                            Box::new(AppTraceWriter {
+                                window: main_window.clone(),
+                            })
+                        };
+                        let format = tracing_subscriber::fmt::format().json();
+                        tracing_subscriber::fmt()
+                            .event_format(format)
+                            .with_writer(make_my_writer)
+                            .init();
+                    }
+                    _ => {}
+                },
                 _ => {}
-            },
-            _ => {}
+            }
+            ()
         })
-        .setup(create_window)
+        .setup(|_| Ok(()))
         .invoke_handler(tauri::generate_handler![
             rustypass::commands::start_scanning,
             rustypass::commands::process_secret,
