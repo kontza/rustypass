@@ -18,11 +18,25 @@
   let foundFiles = []
   let filteredFiles = []
   let secretFailed = false
+  let singleOption
+  let windowInnerHeight
+  let selectSize = 10
 
   $: filterFiles(filterText)
+  $: calculateListSize(filteredFiles)
+
+  function calculateListSize(list) {
+    let optionHeight = 18
+    let inputHeight = 48
+    if (singleOption) {
+      optionHeight = singleOption.clientHeight
+      inputHeight = filterInput.clientHeight
+    }
+    let heightForSelect = windowInnerHeight - inputHeight
+    selectSize = Math.floor(heightForSelect / optionHeight)
+  }
 
   function filterFiles(listFilter) {
-    console.log('listFilter', listFilter)
     if (listFilter.length >= MINIMUM_FILTER_LENGTH) {
       try {
         const filter = new RegExp(listFilter.replace(' ', '.*'), 'i')
@@ -85,7 +99,7 @@
   })
 
   function clickListener(index) {
-    console.info('currentSelection', currentSelection)
+    void invoke('process_secret', { secret: currentSelection.trim() })
   }
 
   function handleKeyUp(event) {
@@ -97,39 +111,42 @@
 
       case 'Enter':
         if (filteredFiles.length === 1) {
-          console.log('Would process filtered', filteredFiles[0])
+          void invoke('process_secret', { secret: filteredFiles[0] })
         } else {
-          console.log('Would process selection', currentSelection)
+          void invoke('process_secret', { secret: currentSelection.trim() })
         }
         break
 
       default:
-        console.info('event:', event)
+        // console.info('event:', event)
         break
     }
   }
 </script>
 
-<svelte:window on:keyup={handleKeyUp} />
+<svelte:window
+  on:resize={calculateListSize}
+  on:keyup={handleKeyUp}
+  bind:innerHeight={windowInnerHeight}
+/>
 
 <main>
+  <input
+    placeholder="Enter search term (regex)"
+    bind:value={filterText}
+    bind:this={filterInput}
+    class={badRegExp ? errorInputClasses : DEFAULT_INPUT_CLASSES}
+  />
   <div class="h-full" style="flex-direction: column; display: flex">
-    <input
-      placeholder="Enter search term (regex)"
-      bind:value={filterText}
-      bind:this={filterInput}
-      class={badRegExp ? errorInputClasses : DEFAULT_INPUT_CLASSES}
-    />
-
     <select
       bind:this={fileTable}
       bind:value={currentSelection}
-      class="w-full h-full flex-auto select select-bordered"
-      size={foundFiles.length}
+      class="h-full select select-bordered"
       on:dblclick={clickListener}
+      size={selectSize}
     >
       {#each filteredFiles as file}
-        <option disabled={file === ''}>
+        <option bind:this={singleOption} disabled={file === ''}>
           {file}
         </option>
       {/each}
