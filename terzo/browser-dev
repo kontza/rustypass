@@ -1,4 +1,0 @@
-#!/bin/sh
-export VITE_MOCK_TAURI_API=true
-export VITE_TRACE_ENABLED=true
-npm run dev
