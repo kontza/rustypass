@@ -83,11 +83,6 @@
     }
   }
 
-  function rescan() {
-    $foundFiles = []
-    startScanning()
-  }
-
   function handleItemFound(payload) {
     console.log('RCV item found', payload.detail)
     $foundFiles = [...$foundFiles, payload.detail]
@@ -100,7 +95,7 @@
 
   function handleSecretReady() {
     $flags.copiedToClipboard = true
-    setTimeout(() => ($flags.copiedToClipboard = true), LABEL_TIMEOUT)
+    setTimeout(() => ($flags.copiedToClipboard = false), LABEL_TIMEOUT)
   }
 
   function getSecretToOpen() {
@@ -144,7 +139,6 @@
       bind:this={filterInput}
       class={$flags.badRegExp ? errorInputClasses : DEFAULT_INPUT_CLASSES}
     />
-    <button class="btn" on:click={rescan}>Rescan</button>
     <select
       bind:this={fileTable}
       bind:value={currentSelection}

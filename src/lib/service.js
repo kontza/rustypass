@@ -18,7 +18,9 @@ export async function startScanning() {
     )
   }
   console.log('start_scanning')
-  await invoke('start_scanning')
+  setTimeout(async () => {
+    await invoke('start_scanning')
+  }, 0)
 }
 
 export async function setUpListeners() {

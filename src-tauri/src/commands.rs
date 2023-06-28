@@ -34,7 +34,6 @@ pub fn start_scanning(window: tauri::Window) {
     let scan_dir = get_scan_dir();
     let rx = scanner::do_start_scanning(&PathBuf::from(&scan_dir));
     for received in rx {
-        println!("scanning...");
         let rcv_path = PathBuf::from(received.path.clone());
         match received.result {
             Ok(result) => {
