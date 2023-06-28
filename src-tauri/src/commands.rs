@@ -29,12 +29,12 @@ fn get_scan_dir() -> String {
     }
 }
 
-#[allow(dead_code)]
 #[tauri::command]
 pub fn start_scanning(window: tauri::Window) {
     let scan_dir = get_scan_dir();
     let rx = scanner::do_start_scanning(&PathBuf::from(&scan_dir));
     for received in rx {
+        println!("scanning...");
         let rcv_path = PathBuf::from(received.path.clone());
         match received.result {
             Ok(result) => {
@@ -69,7 +69,6 @@ pub fn start_scanning(window: tauri::Window) {
     }
 }
 
-#[allow(dead_code)]
 #[tauri::command]
 pub fn process_secret(window: tauri::Window, secret: String, app_handle: tauri::AppHandle) {
     let secret_file: PathBuf = [get_scan_dir(), secret].iter().collect();

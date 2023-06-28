@@ -4,6 +4,7 @@ import { envMocksEnabled, envTraceEnabled } from './env'
 import { fillStore, useMockIPCIfEnabled } from './mocks'
 
 export async function initialize() {
+  console.log('initialize')
   useMockIPCIfEnabled()
   let listeners = setUpListeners()
   void startScanning()
@@ -16,12 +17,14 @@ export async function startScanning() {
       document.dispatchEvent(new CustomEvent('ITEM_FOUND', { detail: entry }))
     )
   }
+  console.log('start_scanning')
   await invoke('start_scanning')
 }
 
 export async function setUpListeners() {
   return [
     await listen('ITEM_FOUND', (evt) => {
+      console.log('SND item found', evt.payload.path)
       document.dispatchEvent(new CustomEvent('ITEM_FOUND', { detail: evt.payload.path }))
     }),
     await listen('SECRET_FAILED', () => {

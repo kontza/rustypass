@@ -89,6 +89,7 @@
   }
 
   function handleItemFound(payload) {
+    console.log('RCV item found', payload.detail)
     $foundFiles = [...$foundFiles, payload.detail]
   }
 
