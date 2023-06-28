@@ -7,10 +7,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   clearScreen: false,
   server: {
-<<<<<<< HEAD
     strictPort: true,
-=======
->>>>>>> terzo
     port: 9110
   },
   envPrefix: ['VITE_', 'TAURI_'],
