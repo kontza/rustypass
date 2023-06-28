@@ -29,7 +29,6 @@ fn get_scan_dir() -> String {
     }
 }
 
-#[allow(dead_code)]
 #[tauri::command]
 pub fn start_scanning(window: tauri::Window) {
     let scan_dir = get_scan_dir();
@@ -69,7 +68,6 @@ pub fn start_scanning(window: tauri::Window) {
     }
 }
 
-#[allow(dead_code)]
 #[tauri::command]
 pub fn process_secret(window: tauri::Window, secret: String, app_handle: tauri::AppHandle) {
     let secret_file: PathBuf = [get_scan_dir(), secret].iter().collect();
