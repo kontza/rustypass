@@ -1,3 +1,4 @@
+// @ts-check
 import { invoke } from '@tauri-apps/api'
 import { listen } from '@tauri-apps/api/event'
 import { envMocksEnabled, envTraceEnabled } from './env'
@@ -25,16 +26,11 @@ export async function startScanning() {
 
 export async function setUpListeners() {
   return [
-    await listen('ITEM_FOUND', (evt) => {
-      console.log('SND item found', evt.payload.path)
+    await listen('ITEM_FOUND', (evt) =>
       document.dispatchEvent(new CustomEvent('ITEM_FOUND', { detail: evt.payload.path }))
-    }),
-    await listen('SECRET_FAILED', () => {
-      document.dispatchEvent(new Event('SECRET_FAILED'))
-    }),
-    await listen('SECRET_READY', () => {
-      document.dispatchEvent(new Event('SECRET_READY'))
-    }),
+    ),
+    await listen('SECRET_FAILED', () => document.dispatchEvent(new Event('SECRET_FAILED'))),
+    await listen('SECRET_READY', () => document.dispatchEvent(new Event('SECRET_READY'))),
     await listen('TRACE', (evt) => {
       const msg = JSON.parse(evt.payload.message)
       if (envTraceEnabled()) {

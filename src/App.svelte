@@ -1,11 +1,8 @@
 <script>
+  // @ts-check
   import { onMount } from 'svelte'
-  import { listen } from '@tauri-apps/api/event'
-  import { invoke } from '@tauri-apps/api'
-  import { envMocksEnabled, envTraceEnabled } from '@/lib/env'
-  import { fillStore, useMockIPCIfEnabled } from '@/lib/mocks'
-  import { initialize, decrypt, startScanning } from './lib/service'
   import { writable, derived } from 'svelte/store'
+  import { initialize, decrypt } from './lib/service'
 
   const MINIMUM_FILTER_LENGTH = 2
   const LABEL_TIMEOUT = 5000
@@ -63,7 +60,6 @@
     let inputHeight = (filterInput || {}).clientHeight || 48
     let heightForSelect = windowInnerHeight - inputHeight
     selectSize = Math.floor(heightForSelect / optionHeightToUse)
-    console.log('selectSize', selectSize, optionHeight, (filterInput || {}).clientHeight)
   }
 
   function clickListener() {
