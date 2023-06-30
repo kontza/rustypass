@@ -85,6 +85,7 @@ fn main() {
                     SHOW => {
                         let main_window = app.get_window(MAIN_WINDOW_LABEL).unwrap();
                         main_window.show().unwrap();
+                        main_window.set_focus().unwrap();
                     }
                     _ => {}
                 },
@@ -109,6 +110,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             rustypass::commands::start_scanning,
             rustypass::commands::process_secret,
+            rustypass::commands::get_global_shortcut,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

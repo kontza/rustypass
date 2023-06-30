@@ -23,7 +23,7 @@ fn get_shortcut() -> String {
     let mut bd = ConfigStore {
         config_dir: Box::new(c),
     };
-    let fallback = "CommandOrControl+Shift+R";
+    let fallback = "CommandOrControl+Shift+P";
     match bd.get_config(SHORTCUT_VALUE) {
         Some(value) => value,
         None => fallback.to_string(),
@@ -83,7 +83,8 @@ pub fn start_scanning(window: tauri::Window) {
 
 #[tauri::command]
 pub fn get_global_shortcut(window: tauri::Window) {
-    window.emit("SHORTCUT", get_shortcut()).unwrap();
+    let sc = get_shortcut();
+    window.emit("SHORTCUT", sc).unwrap();
 }
 
 #[tauri::command]

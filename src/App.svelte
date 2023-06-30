@@ -26,7 +26,6 @@
       try {
         const filter = new RegExp($filterText.replace(' ', '.*'), 'i')
         const rv = $foundFiles.filter((file) => filter.test(file))
-        console.log('filtered', rv)
         return rv
       } catch (error) {
         // Probably a bad regexp, return all files.
@@ -41,12 +40,12 @@
     const eventsAndListeners = new Map([
       ['ITEM_FOUND', handleItemFound],
       ['SECRET_FAILED', handleSecretFailed],
-      ['SECRET_READY', handleSecretReady],
-      ['SHORTCUT', setGlobalShortcut]
+      ['SECRET_READY', handleSecretReady]
     ])
-    for (let [eventName], eventListener] of eventsAndListeners) {
-      // Remove previous listeners. It seems that in tauri-dev mode onMount is called many times.
+    for (let [eventName, eventListener] of eventsAndListeners) {
+      // Remove the previous listener. It seems that in tauri-dev mode onMount is called many times.
       document.removeEventListener(eventName, eventListener)
+      document.addEventListener(eventName, eventListener)
     }
     filterInput.focus()
     let listeners = initialize()
@@ -98,10 +97,6 @@
   function handleSecretReady() {
     $flags.copiedToClipboard = true
     setTimeout(() => ($flags.copiedToClipboard = false), LABEL_TIMEOUT)
-  }
-
-  function setGlobalShortcut(payload) {
-    console.log('Would process shortcut', payload)
   }
 
   function getSecretToOpen() {
