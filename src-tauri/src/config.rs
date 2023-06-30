@@ -4,6 +4,7 @@ use crate::config::config_dir::ConfigDirInterface;
 use config::{Config, File, FileFormat};
 
 pub const SCAN_DIRECTORY_VALUE: &str = "scan-directory";
+pub const SHORTCUT_VALUE: &str = "shortcut";
 
 pub trait ConfigStoreInterface {
     fn get_config(&mut self, value: &str) -> Option<String>;
@@ -31,7 +32,7 @@ impl ConfigStoreInterface for ConfigStore {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{ConfigStoreInterface, SCAN_DIRECTORY_VALUE};
+    use crate::config::{ConfigStoreInterface, SCAN_DIRECTORY_VALUE, SHORTCUT_VALUE};
 
     use super::config_dir::TestConfigDir;
     use super::ConfigStore;
@@ -43,6 +44,10 @@ mod tests {
         };
         match bd.get_config(SCAN_DIRECTORY_VALUE) {
             Some(value) => assert_eq!(value, "/tmp"),
+            None => assert!(false),
+        }
+        match bd.get_config(SHORTCUT_VALUE) {
+            Some(value) => assert_eq!(value, "global-shortcut"),
             None => assert!(false),
         }
     }
