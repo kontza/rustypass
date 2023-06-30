@@ -1,3 +1,4 @@
+use crate::config::SHORTCUT_VALUE;
 use crate::config::{
     config_dir::ConfigDir, ConfigStore, ConfigStoreInterface, SCAN_DIRECTORY_VALUE,
 };
@@ -15,6 +16,18 @@ struct ItemPayload {
 #[derive(Clone, serde::Serialize)]
 struct SecretPayload {
     secret: String,
+}
+
+fn get_shortcut() -> String {
+    let c = ConfigDir;
+    let mut bd = ConfigStore {
+        config_dir: Box::new(c),
+    };
+    let fallback = "CommandOrControl+Shift+R";
+    match bd.get_config(SHORTCUT_VALUE) {
+        Some(value) => value,
+        None => fallback.to_string(),
+    }
 }
 
 fn get_scan_dir() -> String {
@@ -66,6 +79,11 @@ pub fn start_scanning(window: tauri::Window) {
             }
         }
     }
+}
+
+#[tauri::command]
+pub fn get_global_shortcut(window: tauri::Window) {
+    window.emit("SHORTCUT", get_shortcut()).unwrap();
 }
 
 #[tauri::command]

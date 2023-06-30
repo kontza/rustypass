@@ -38,13 +38,16 @@
   })
 
   onMount(async () => {
-    // Remove previous listeners. It seems that in tauri-dev mode onMount is called many times.
-    document.removeEventListener('ITEM_FOUND', handleItemFound, { capture: true })
-    document.removeEventListener('SECRET_FAILED', handleSecretFailed, { capture: true })
-    document.removeEventListener('SECRET_READY', handleSecretReady, { capture: true })
-    document.addEventListener('ITEM_FOUND', handleItemFound, { capture: true })
-    document.addEventListener('SECRET_FAILED', handleSecretFailed, { capture: true })
-    document.addEventListener('SECRET_READY', handleSecretReady, { capture: true })
+    const eventsAndListeners = new Map([
+      ['ITEM_FOUND', handleItemFound],
+      ['SECRET_FAILED', handleSecretFailed],
+      ['SECRET_READY', handleSecretReady],
+      ['SHORTCUT', setGlobalShortcut]
+    ])
+    for (let [eventName], eventListener] of eventsAndListeners) {
+      // Remove previous listeners. It seems that in tauri-dev mode onMount is called many times.
+      document.removeEventListener(eventName, eventListener)
+    }
     filterInput.focus()
     let listeners = initialize()
     filteredFiles.subscribe(recalculateSize)
@@ -84,7 +87,6 @@
   }
 
   function handleItemFound(payload) {
-    console.log('RCV item found', payload.detail)
     $foundFiles = [...$foundFiles, payload.detail]
   }
 
@@ -96,6 +98,10 @@
   function handleSecretReady() {
     $flags.copiedToClipboard = true
     setTimeout(() => ($flags.copiedToClipboard = false), LABEL_TIMEOUT)
+  }
+
+  function setGlobalShortcut(payload) {
+    console.log('Would process shortcut', payload)
   }
 
   function getSecretToOpen() {
